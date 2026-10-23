@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ödev Takip</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#ffffff; --ink:#1b2236; --muted:#6b7490; --line:#e4e8f2;
+  --primary:#4f46e5; --primary-d:#4338ca; --primary-l:#eef0ff;
+  --ok:#16a34a; --ok-l:#e8f7ee; --no:#dc2626; --no-l:#fdecec; --warn:#d97706; --warn-l:#fff4e0;
+  --radius:14px; --shadow:0 1px 2px rgba(20,28,60,.05),0 8px 24px rgba(20,28,60,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(120deg,#3730a3,#4f46e5 55%,#6366f1);color:#fff;padding:22px 20px 70px}
+.wrap{max-width:1040px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+.brand h1{font-size:1.35rem;margin:0;font-weight:700;letter-spacing:.2px}
+.brand p{margin:0;font-size:.85rem;opacity:.8}
+nav{margin-top:-46px;display:flex;gap:6px;background:var(--card);padding:6px;border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto}
+nav button{flex:1;min-width:130px;border:0;background:transparent;padding:12px 14px;border-radius:10px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;display:flex;gap:8px;align-items:center;justify-content:center;transition:.15s}
+nav button:hover{background:var(--primary-l);color:var(--primary)}
+nav button.active{background:var(--primary);color:#fff}
+main{padding:20px 0 60px}
+.view{display:none}.view.active{display:block}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border:1px solid var(--line)}
+.card h2{margin:0 0 14px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.card h2 small{font-weight:500;color:var(--muted);font-size:.8rem}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin:12px 0 5px}
+input,select,textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+textarea{resize:vertical;min-height:80px}
+.row{display:flex;gap:8px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--primary);color:#fff;transition:.15s;white-space:nowrap}
+.btn:hover{background:var(--primary-d)}
+.btn.ghost{background:var(--primary-l);color:var(--primary)}
+.btn.ghost:hover{background:#e0e3ff}
+.btn.ok{background:var(--ok)}.btn.ok:hover{background:#15803d}
+.btn.wa{background:#25d366}.btn.wa:hover{background:#1ebd5a}
+.btn.block{width:100%;margin-top:14px}
+.btn.sm{padding:6px 12px;font-size:.85rem}
+.list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;cursor:default;background:#fff}
+.item.sel{border-color:var(--primary);background:var(--primary-l)}
+.item.click{cursor:pointer}.item.click:hover{border-color:#c5c9f5}
+.item .name{flex:1;font-weight:600;word-break:break-word}
+.item .meta{font-size:.78rem;color:var(--muted);font-weight:500}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-l);color:var(--primary);display:grid;place-items:center;font-weight:700;font-size:.85rem;flex:none}
+.x{border:0;background:transparent;color:#a1a8bf;cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:8px}
+.x:hover{background:var(--no-l);color:var(--no)}
+.empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:.92rem}
+.empty b{display:block;font-size:1.5rem;margin-bottom:4px}
+.badge{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--warn-l);color:var(--warn)}
+.badge.done{background:var(--ok-l);color:var(--ok)}
+.hw .title{font-weight:700}
+.hw .sub{font-size:.8rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin-top:6px}
+th,td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+th.y{color:var(--ok)}th.n{color:var(--no)}th.g{color:var(--warn)}
+td input[type=checkbox]{appearance:none;width:24px;height:24px;border:2px solid #cfd5e6;border-radius:7px;padding:0;cursor:pointer;display:inline-grid;place-items:center;transition:.12s;vertical-align:middle}
+td input[type=checkbox]:focus{box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+td input.y:checked{background:var(--ok);border-color:var(--ok)}
+td input.n:checked{background:var(--no);border-color:var(--no)}
+td input.g:checked{background:var(--warn);border-color:var(--warn)}
+td input[type=checkbox]:checked::after{content:"✓";color:#fff;font-size:15px;font-weight:700;line-height:1}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.back{background:none;border:0;color:var(--primary);font-weight:600;cursor:pointer;padding:0;font:inherit}
+.modal{position:fixed;inset:0;background:rgba(15,20,40,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.show{display:flex}
+.modal .box{background:#fff;border-radius:16px;max-width:560px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal textarea{min-height:200px;font-size:.95rem}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(30px);background:#1b2236;color:#fff;padding:11px 20px;border-radius:99px;font-weight:600;font-size:.9rem;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hint{font-size:.78rem;color:var(--muted);margin-top:6px}
+.pick{max-width:360px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap brand">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/><path d="M9 8h6M9 12h4"/></svg>
+    </div>
+    <div><h1>Ödev Takip</h1><p>Sınıf, öğrenci ve ödev yönetimi</p></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav id="tabs">
+    <button data-tab="siniflar" class="active">🏫 Sınıflar &amp; Öğrenciler</button>
+    <button data-tab="odev">📝 Ödev Ekle</button>
+    <button data-tab="kontrol">✅ Ödev Kontrol Et</button>
+  </nav>
+
+  <main>
+    <!-- SINIFLAR -->
+    <section id="v-siniflar" class="view active">
+      <div class="grid">
+        <div class="card">
+          <h2>Sınıf Ekle</h2>
+          <div class="row">
+            <input id="className" placeholder="Örn: 8-A" maxlength="40">
+            <button class="btn" id="addClass">Ekle</button>
+          </div>
+          <ul class="list" id="classList"></ul>
+        </div>
+        <div class="card" id="studentCard"></div>
+      </div>
+    </section>
+
+    <!-- ODEV EKLE -->
+    <section id="v-odev" class="view">
+      <div class="grid">
+        <div class="card">
+          <h2>Yeni Ödev</h2>
+          <label for="hwClass">Sınıf</label>
+          <select id="hwClass"></select>
+          <label for="hwTitle">Ödev Başlığı</label>
+          <input id="hwTitle" placeholder="Örn: Sayfa 45 - Test 3" maxlength="120">
+          <label for="hwDate">Veriliş Tarihi</label>
+          <input id="hwDate" type="date">
+          <label for="hwNote">Açıklama (isteğe bağlı)</label>
+          <textarea id="hwNote" placeholder="Not..."></textarea>
+          <button class="btn block" id="addHw">Ödevi Kaydet</button>
+        </div>
+        <div class="card">
+          <h2>Verilen Ödevler <small id="hwCount"></small></h2>
+          <ul class="list" id="hwList"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- KONTROL -->
+    <section id="v-kontrol" class="view">
+      <div class="card" id="checkCard"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="msgModal">
+  <div class="box">
+    <h2 style="margin:0 0 12px">WhatsApp Mesajı</h2>
+    <textarea id="msgText"></textarea>
+    <div class="actions">
+      <button class="btn wa" id="copyMsg">📋 Kopyala</button>
+      <button class="btn ghost" id="closeMsg">Kapat</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const KEY = 'odevTakip.v1';
+  let state = load();
+  let ui = { tab:'siniflar', classId:null, checkClassId:null, openHw:null, draft:{} };
+
+  function load(){
+    try{
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if(s && Array.isArray(s.classes)) return Object.assign({classes:[],homeworks:[],checks:{}}, s);
+    }catch(e){}
+    return {classes:[],homeworks:[],checks:{}};
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch(e){ toast('Kayıt yapılamadı (tarayıcı belleği kapalı olabilir)'); }
+  }
+  const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const getClass = id => state.classes.find(c => c.id === id);
+  const fmtDate = d => { if(!d) return ''; const p=d.split('-'); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : d; };
+  const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const initial = n => (n.trim()[0]||'?').toLocaleUpperCase('tr');
+  let tt;
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
+
+  /* ---------- Tabs ---------- */
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+    ui.tab = b.dataset.tab;
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x===b));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='v-'+ui.tab));
+    render();
+  });
+
+  /* ---------- Sınıflar ---------- */
+  function addClass(){
+    const name = $('className').value.trim();
+    if(!name) return toast('Sınıf adı yazın');
+    if(state.classes.some(c => c.name.toLocaleLowerCase('tr')===name.toLocaleLowerCase('tr'))) return toast('Bu sınıf zaten var');
+    const c = {id:uid(), name, students:[]};
+    state.classes.push(c); ui.classId = c.id; save();
+    $('className').value=''; render(); toast('Sınıf eklendi');
+  }
+  $('addClass').onclick = addClass;
+  $('className').addEventListener('keydown', e => { if(e.key==='Enter') addClass(); });
+
+  function renderClasses(){
+    const ul = $('classList');
+    if(!state.classes.length){ ul.innerHTML = '<div class="empty"><b>🏫</b>Henüz sınıf yok</div>'; }
+    else ul.innerHTML = state.classes.map(c => `
+      <li class="item click ${c.id===ui.classId?'sel':''}" data-id="${c.id}">
+        <div class="avatar">${esc(initial(c.name))}</div>
+        <div class="name">${esc(c.name)}<div class="meta">${c.students.length} öğrenci</div></div>
+        <button class="x" data-del="${c.id}" title="Sınıfı sil">✕</button>
+      </li>`).join('');
+    ul.querySelectorAll('.item').forEach(li => li.onclick = e => {
+      if(e.target.dataset.del) return;
+      ui.classId = li.dataset.id; render();
+    });
+    ul.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+      const c = getClass(b.dataset.del);
+      if(!confirm(`"${c.name}" sınıfı, öğrencileri ve ödevleri silinsin mi?`)) return;
+      state.homeworks.filter(h => h.classId===c.id).forEach(h => delete state.checks[h.id]);
+      state.homeworks = state.homeworks.filter(h => h.classId!==c.id);
+      state.classes = state.classes.filter(x => x.id!==c.id);
+      if(ui.classId===c.id) ui.classId=null;
+      save(); render();
+    });
+  }
+
+  function renderStudents(){
+    const card = $('studentCard');
+    const c = getClass(ui.classId);
+    if(!c){ card.innerHTML = '<div class="empty"><b>👈</b>Öğrenci eklemek için soldan bir sınıf seçin</div>'; return; }
+    card.innerHTML = `
+      <h2>${esc(c.name)} – Öğrenciler <small>${c.students.length} kişi</small></h2>
+      <div class="row">
+        <input id="stuName" placeholder="Öğrenci adı soyadı" maxlength="60">
+        <button class="btn" id="addStu">Ekle</button>
+      </div>
+      <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Toplu ekle (her satıra bir öğrenci)</summary>
+        <textarea id="bulk" placeholder="Ali Yılmaz&#10;Ayşe Demir&#10;..." style="margin-top:8px"></textarea>
+        <button class="btn ghost sm" id="addBulk" style="margin-top:8px">Listeyi Ekle</button>
+      </details>
+      <ul class="list" id="stuList">${
+        c.students.length ? c.students.map((s,i) => `
+        <li class="item"><div class="avatar">${esc(initial(s.name))}</div>
+          <div class="name">${esc(s.name)}</div>
+          <button class="x" data-s="${s.id}" title="Sil">✕</button></li>`).join('')
+        : '<div class="empty"><b>🧑‍🎓</b>Bu sınıfta henüz öğrenci yok</div>'
+      }</ul>`;
+    const add = () => {
+      const n = $('stuName').value.trim();
+      if(!n) return toast('Öğrenci adı yazın');
+      c.students.push({id:uid(), name:n}); save(); render(); $('stuName').focus();
+    };
+    $('addStu').onclick = add;
+    $('stuName').addEventListener('keydown', e => { if(e.key==='Enter') add(); });
+    $('addBulk').onclick = () => {
+      const lines = $('bulk').value.split('\n').map(x => x.trim()).filter(Boolean);
+      if(!lines.length) return toast('Liste boş');
+      lines.forEach(n => c.students.push({id:uid(), name:n})); save(); render(); toast(lines.length+' öğrenci eklendi');
+    };
+    card.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+      const s = c.students.find(x => x.id===b.dataset.s);
+      if(!confirm(`${s.name} silinsin mi?`)) return;
+      c.students = c.students.filter(x => x.id!==s.id);
+      Object.values(state.checks).forEach(ch => delete ch[s.id]);
+      save(); render();
+    });
+  }
+
+  /* ---------- Ödev Ekle ---------- */
+  function classOptions(selected){
+    if(!state.classes.length) return '<option value="">Önce sınıf ekleyin</option>';
+    return state.classes.map(c => `<option value="${c.id}" ${c.id===selected?'selected':''}>${esc(c.name)}</option>`).join('');
+  }
+  function renderHw(){
+    const prev = $('hwClass').value || ui.classId;
+    $('hwClass').innerHTML = classOptions(prev);
+    if(!$('hwDate').value) $('hwDate').value = today();
+    drawHwList();
+  }
+  function drawHwList(){
+    const cid = $('hwClass').value;
+    const list = state.homeworks.filter(h => h.classId===cid).sort((a,b) => (b.date||'').localeCompare(a.date||'') || b.id.localeCompare(a.id));
+    const c = getClass(cid);
+    $('hwCount').textContent = c ? c.name : '';
+    $('hwList').innerHTML = list.length ? list.map(h => `
+      <li class="item hw"><div class="avatar">📝</div>
+        <div class="name"><div class="title">${esc(h.title)}</div>
+          <div class="sub">${fmtDate(h.date)}${h.note?' · '+esc(h.note):''}</div></div>
+        <button class="x" data-h="${h.id}" title="Sil">✕</button></li>`).join('')
+      : '<div class="empty"><b>📭</b>Bu sınıfa ödev verilmemiş</div>';
+    $('hwList').querySelectorAll('[data-h]').forEach(b => b.onclick = () => {
+      if(!confirm('Ödev silinsin mi?')) return;
+      state.homeworks = state.homeworks.filter(h => h.id!==b.dataset.h);
+      delete state.checks[b.dataset.h];
+      if(ui.openHw===b.dataset.h) ui.openHw=null;
+      save(); drawHwList(); toast('Ödev silindi');
+    });
+  }
+  $('hwClass').onchange = drawHwList;
+  $('addHw').onclick = () => {
+    const classId = $('hwClass').value, title = $('hwTitle').value.trim();
+    if(!classId) return toast('Önce sınıf seçin');
+    if(!title) return toast('Ödev başlığı yazın');
+    state.homeworks.push({id:uid(), classId, title, date:$('hwDate').value, note:$('hwNote').value.trim()});
+    save(); $('hwTitle').value=''; $('hwNote').value=''; drawHwList(); toast('Ödev kaydedildi');
+  };
+
+  /* ---------- Kontrol ---------- */
+  function renderCheck(){
+    const card = $('checkCard');
+    if(ui.openHw){ return renderCheckPanel(card); }
+    if(!state.classes.length){ card.innerHTML='<div class="empty"><b>🏫</b>Önce bir sınıf ekleyin</div>'; return; }
+    if(!getClass(ui.checkClassId)) ui.checkClassId = ui.classId && getClass(ui.classId) ? ui.classId : state.classes[0].id;
+    const list = state.homeworks.filter(h => h.classId===ui.checkClassId).sort((a,b) => (b.date||'').localeCompare(a.date||'') || b.id.localeCompare(a.id));
+    const c = getClass(ui.checkClassId);
+    card.innerHTML = `
+      <h2>Ödev Kontrol Et</h2>
+      <label for="chkClass">Sınıf</label>
+      <select id="chkClass" class="pick">${classOptions(ui.checkClassId)}</select>
+      <ul class="list">${
+        list.length ? list.map(h => {
+          const ch = state.checks[h.id]||{}; const n = Object.keys(ch).length;
+          const done = c.students.length && n>=c.students.length;
+          return `<li class="item hw"><div class="avatar">📝</div>
+            <div class="name"><div class="title">${esc(h.title)}</div><div class="sub">${fmtDate(h.date)}${h.note?' · '+esc(h.note):''}</div></div>
+            <span class="badge ${done?'done':''}">${n}/${c.students.length}</span>
+            <button class="btn sm" data-open="${h.id}">Kontrol Et</button></li>`;
+        }).join('') : '<div class="empty"><b>📭</b>Bu sınıfa verilmiş ödev yok</div>'
+      }</ul>`;
+    $('chkClass').onchange = e => { ui.checkClassId = e.target.value; renderCheck(); };
+    card.querySelectorAll('[data-open]').forEach(b => b.onclick = () => {
+      ui.openHw = b.dataset.open;
+      ui.draft = Object.assign({}, state.checks[ui.openHw]||{});
+      renderCheck();
+    });
+  }
+
+  function renderCheckPanel(card){
+    const h = state.homeworks.find(x => x.id===ui.openHw);
+    const c = h && getClass(h.classId);
+    if(!h || !c){ ui.openHw=null; return renderCheck(); }
+    card.innerHTML = `
+      <button class="back" id="backBtn">← Ödev listesine dön</button>
+      <div class="panel-head">
+        <div><h2 style="margin:8px 0 2px">${esc(h.title)}</h2>
+        <div class="hint" style="margin:0">${esc(c.name)} · ${fmtDate(h.date)}</div></div>
+      </div>
+      ${c.students.length ? `
+      <table>
+        <thead><tr><th>Öğrenci</th><th class="y">Yaptı</th><th class="n">Yapmadı</th><th class="g">Gelmedi</th></tr></thead>
+        <tbody>${c.students.map(s => `
+          <tr><td>${esc(s.name)}</td>
+          ${[['y','yapti'],['n','yapmadi'],['g','gelmedi']].map(([cls,v]) =>
+            `<td><input type="checkbox" class="${cls}" data-s="${s.id}" data-v="${v}" ${ui.draft[s.id]===v?'checked':''} aria-label="${esc(s.name)} ${v}"></td>`).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="actions">
+        <button class="btn ok" id="saveChk">💾 Kaydet</button>
+        <button class="btn wa" id="sendChk">📲 Gönder</button>
+      </div>` : '<div class="empty"><b>🧑‍🎓</b>Bu sınıfta öğrenci yok. Önce öğrenci ekleyin.</div>'}`;
+    $('backBtn').onclick = () => { ui.openHw=null; renderCheck(); };
+    card.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = () => {
+      const sid = cb.dataset.s;
+      if(cb.checked){ ui.draft[sid] = cb.dataset.v; } else { delete ui.draft[sid]; }
+      card.querySelectorAll(`input[data-s="${sid}"]`).forEach(o => o.checked = (ui.draft[sid]===o.dataset.v));
+    });
+    if($('saveChk')) $('saveChk').onclick = () => { saveCheck(); toast('Seçimler kaydedildi'); };
+    if($('sendChk')) $('sendChk').onclick = () => { saveCheck(); openMessage(h,c); };
+  }
+  function saveCheck(){ state.checks[ui.openHw] = Object.assign({}, ui.draft); save(); }
+
+  function joinNames(a){ return a.join(', '); }
+  function openMessage(h,c){
+    const ch = state.checks[h.id]||{};
+    const no = c.students.filter(s => ch[s.id]==='yapmadi').map(s => s.name);
+    const gl = c.students.filter(s => ch[s.id]==='gelmedi').map(s => s.name);
+    const lines = [];
+    if(no.length) lines.push(`${joinNames(no)} öğrencileri ${h.title} ödevini yapmadı.`);
+    if(gl.length) lines.push(`${joinNames(gl)} öğrencileri ${h.title} gelmediği için kontrol edilemedi.`);
+    if(!lines.length) lines.push(`Tüm öğrenciler ${h.title} ödevini yaptı. 👏`);
+    $('msgText').value = `📚 ${c.name} - ${fmtDate(h.date)}\n\n` + lines.join('\n');
+    $('msgModal').classList.add('show');
+  }
+  $('closeMsg').onclick = () => $('msgModal').classList.remove('show');
+  $('msgModal').onclick = e => { if(e.target===$('msgModal')) $('msgModal').classList.remove('show'); };
+  $('copyMsg').onclick = async () => {
+    const t = $('msgText');
+    try{ await navigator.clipboard.writeText(t.value); }
+    catch(e){ t.select(); document.execCommand('copy'); }
+    toast('Mesaj kopyalandı');
+  };
+
+  /* ---------- Render ---------- */
+  function render(){
+    if(ui.tab==='siniflar'){ renderClasses(); renderStudents(); }
+    else if(ui.tab==='odev'){ renderHw(); }
+    else if(ui.tab==='kontrol'){ renderCheck(); }
+  }
+  render();
+})();
+</script>
+</body>
+</html>
